@@ -42,7 +42,7 @@ REWARD_MAPPING_TRANSITION_REVAL = REWARD_MAPPING_BASELINE  # Rewards remain the 
 
 # *** Time Generation Parameters *** #
 
-TIME_DRIFT_RATE = 0.1
+TIME_DRIFT_RATE = 0.01
 TIME_DRIFT_NOISE = 0.0
 
 
@@ -96,6 +96,21 @@ get_transition_revaluation_trials = partial(
 )
 
 
+# def get_time_sequence(num_trials: int,
+#                       time_drift_rate: float = TIME_DRIFT_RATE,
+#                       noise: float = TIME_DRIFT_NOISE,
+#                       random_state: Optional[int] = None) -> np.ndarray:
+#     import torch
+#     import comparision.utils as utils
+#     times = []
+#     time_code = torch.zeros((TIME_SIZE,), dtype=torch.float) + .01
+#     for _ in range(num_trials):
+#         time_code += torch.randn_like(time_code) * TIME_DRIFT_RATE
+#         times.append(utils.normalized(time_code.clone()))
+#     return np.array(times)
+
+
+#
 def get_time_sequence(num_trials: int,
                       time_drift_rate: float = TIME_DRIFT_RATE,
                       noise: float = TIME_DRIFT_NOISE,
@@ -107,7 +122,11 @@ def get_time_sequence(num_trials: int,
     time_fct = pnl.DriftOnASphereIntegrator(initializer=rng.random(TIME_SIZE - 1),
                                             noise=noise,
                                             dimension=TIME_SIZE)
+    # return an arrays of .01
+    # return np.array([np.zeros(25) + .01 for _ in range(num_trials)])
     return np.array([time_fct(time_drift_rate) for _ in range(num_trials)])
+#
+
 
 # if __name__ == '__main__':
 #     states, rewards = (random_state=42)

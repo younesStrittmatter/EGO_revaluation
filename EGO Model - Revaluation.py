@@ -125,11 +125,11 @@ NUM_PRED_TRIALS = 10           # Number of trials (ROLL OUTS) to run in PREDICTI
 
 CONSTRUCT_MODEL = True                 # THIS MUST BE SET TO True to run the script
 DISPLAY_MODEL = (                      # Only one of the following can be uncommented:
-    # None                             # suppress display of model
-    {}                               # show simple visual display of model
+    None                             # suppress display of model
+    # {}                               # show simple visual display of model
     # {'show_node_structure': True}    # show detailed view of node structures and projections
 )
-RUN_MODEL = False                       # True => run the model
+RUN_MODEL = True                       # True => run the model
 # RUN_MODEL = False                      # False => don't run the model
 EXECUTION_MODE = ExecutionMode.Python
 # EXECUTION_MODE = ExecutionMode.PyTorch
@@ -137,7 +137,7 @@ ANALYZE_RESULTS = False                # True => output analysis of results of r
 # REPORT_OUTPUT = ReportOutput.FULL     # Sets console output during run [ReportOutput.ON, .TERSE OR .FULL]
 REPORT_OUTPUT = ReportOutput.OFF     # Sets console output during run [ReportOutput.ON, .TERSE OR .FULL]
 REPORT_PROGRESS = ReportProgress.OFF   # Sets console progress bar during run
-PRINT_RESULTS = False                  # print model.results after execution
+PRINT_RESULTS = True                  # print model.results after execution
 ANIMATE = False # {UNIT:EXECUTION_SET} # Specifies whether to generate animation of execution
 
 
@@ -229,7 +229,7 @@ assert (model_params['retrieved_context_weight'] + STATE_WEIGHT + CONTEXT_INTEGR
 STATE_RETRIEVAL_WEIGHT = model_params['state_weight']     # weight of state field in retrieval from EM
 TIME_RETRIEVAL_WEIGHT = model_params['time_weight']       # weight of time field in retrieval from EM
 CONTEXT_RETRIEVAL_WEIGHT = model_params['context_weight'] # weight of context field in retrieval from EM
-REWARD_RETRIEVAL_WEIGHT = 0                               # weight of reward field in retrieval from EM
+REWARD_RETRIEVAL_WEIGHT = None                               # weight of reward field in retrieval from EM
 RETRIEVAL_SOFTMAX_GAIN = 1/model_params['temperature']    # gain on softmax retrieval function
 # RETRIEVAL_HAZARD_RATE = 0.04   # rate of re=sampling of em following non-match determination in a pass through ffn
 
@@ -477,7 +477,7 @@ def construct_model(model_name:str=MODEL_NAME,
     retrieved_reward_layer = TransferMechanism(name=retrieved_reward_name, input_shapes=reward_size)
     context_layer = RecurrentTransferMechanism(name=context_name,
                                                input_shapes=state_size,
-                                               auto=1-context_integration_rate,
+                                               auto=1-model_params["self_excitation"],
                                                hetero=0.0)
     em = EMComposition(name=em_name,
                        memory_template=[[0] * state_size,   # state
@@ -738,6 +738,16 @@ if __name__ == '__main__':
                                                     sampling_type=SAMPLING_TYPE,
                                                     ratio=RATIO,
                                                     stim_seqs=STIM_SEQS)
+
+        prediction_inputs = build_prediction_inputs(state_size=STATE_SIZE,
+                                                    time_drift_rate=TIME_DRIFT_RATE,
+                                                    num_roll_outs_per_stim=int(NUM_ROLL_OUTS / 2),
+                                                    stim_seqs=STIM_SEQS,
+                                                    reward_vals=REWARD_VALS,
+                                                    seq_type=PREDICT_SEQ_TYPE)
+
+        print(experience_inputs)
+
         input_layers = [TIME_INPUT_LAYER_NAME,
                         TASK_INPUT_LAYER_NAME,
                         STATE_INPUT_LAYER_NAME,
@@ -750,13 +760,10 @@ if __name__ == '__main__':
                   report_output=REPORT_OUTPUT,
                   report_progress=REPORT_PROGRESS)
 
+
+
         # Prediction Phase
-        prediction_inputs = build_prediction_inputs(state_size=STATE_SIZE,
-                                                    time_drift_rate=TIME_DRIFT_RATE,
-                                                    num_roll_outs_per_stim=int(NUM_ROLL_OUTS / 2),
-                                                    stim_seqs=STIM_SEQS,
-                                                    reward_vals=REWARD_VALS,
-                                                    seq_type=PREDICT_SEQ_TYPE)
+
         print(f"Running {model.name} for {NUM_ROLL_OUTS} PREDICT (ROLL OUT) trials")
         model.termination_processing = {
             TimeScale.TRIAL: And(Condition(lambda: model.nodes[TASK_INPUT_LAYER_NAME].value == Task.PREDICT),

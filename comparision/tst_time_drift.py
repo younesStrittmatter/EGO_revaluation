@@ -1,4 +1,5 @@
 import torch
+from comparision.data import get_time_sequence
 
 time_noise = .01
 n_trials = 120
@@ -8,7 +9,7 @@ TIME_D = 25
 def norm(key):
     return key/key.norm(dim=-1,keepdim=True)
 
-def main():
+def get_time_code_original():
     times = []
     time_code = torch.zeros((TIME_D,), dtype=torch.float) + .01
 
@@ -16,6 +17,14 @@ def main():
         time_code += torch.randn_like(time_code) * time_noise
 
         times.append(norm(time_code.clone()))
+    return times
+
+def main():
+    times = get_time_sequence(
+        num_trials=n_trials,
+    )
+
+    times = [torch.asarray(t) for t in times]
 
     # check that all time codes are normalized
     print('checking normalization of time codes:')
