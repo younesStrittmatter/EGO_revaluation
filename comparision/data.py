@@ -19,8 +19,8 @@ STIM_SEQ_1_BASELINE = [1, 3, 5]  # Stimulus sequence 1
 STIM_SEQ_2_BASELINE = [2, 4, 6]  # Stimulus sequence 2
 
 REWARD_MAPPING_BASELINE = {
-    1: 0, 3: 0, 5: 10,  # Rewards for sequence 1 / stimulus 5 is rewarded with 1
-    2: 0, 4: 0, 6: 1  # Rewards for sequence 2 / stimulus 6 is rewarded with 10
+    1: 0, 3: 0, 5: REWARD_BASELINE_1,  # Rewards for sequence 1 / stimulus 5 is rewarded with 1
+    2: 0, 4: 0, 6: REWARD_BASELINE_2  # Rewards for sequence 2 / stimulus 6 is rewarded with 10
 }
 
 # * Reward revaluation experiment parameters * #
@@ -29,8 +29,8 @@ STIM_SEQ_1_REWARD_REVAL = STIM_SEQ_1_BASELINE[1:]  # Stimulus sequence (no chang
 STIM_SEQ_2_REWARD_REVAL = STIM_SEQ_2_BASELINE[1:]  # Stimulus sequence
 
 REWARD_MAPPING_REWARD_REVAL = {
-    1: 0, 3: 0, 5: 1,  # Rewards for sequence 1 / stimulus 5 is rewarded with 1 (changed from 10)
-    2: 0, 4: 0, 6: 10  # Rewards for sequence 2 / stimulus 6 is rewarded with 10 (changed from 1)
+    1: 0, 3: 0, 5: REWARD_BASELINE_2,  # Rewards for sequence 1 / stimulus 5 is rewarded with 1 (changed from 10)
+    2: 0, 4: 0, 6: REWARD_BASELINE_1  # Rewards for sequence 2 / stimulus 6 is rewarded with 10 (changed from 1)
 }
 
 # * Transition revaluation experiment parameters * #
@@ -96,35 +96,35 @@ get_transition_revaluation_trials = partial(
 )
 
 
-# def get_time_sequence(num_trials: int,
-#                       time_drift_rate: float = TIME_DRIFT_RATE,
-#                       noise: float = TIME_DRIFT_NOISE,
-#                       random_state: Optional[int] = None) -> np.ndarray:
-#     import torch
-#     import comparision.utils as utils
-#     times = []
-#     time_code = torch.zeros((TIME_SIZE,), dtype=torch.float) + .01
-#     for _ in range(num_trials):
-#         time_code += torch.randn_like(time_code) * TIME_DRIFT_RATE
-#         times.append(utils.normalized(time_code.clone()))
-#     return np.array(times)
-
-
-#
 def get_time_sequence(num_trials: int,
                       time_drift_rate: float = TIME_DRIFT_RATE,
                       noise: float = TIME_DRIFT_NOISE,
                       random_state: Optional[int] = None) -> np.ndarray:
-    """
-    Generate time sequence as drift on a sphere
-    """
-    rng = np.random.default_rng(random_state)
-    time_fct = pnl.DriftOnASphereIntegrator(initializer=rng.random(TIME_SIZE - 1),
-                                            noise=noise,
-                                            dimension=TIME_SIZE)
-    # return an arrays of .01
-    # return np.array([np.zeros(25) + .01 for _ in range(num_trials)])
-    return np.array([time_fct(time_drift_rate) for _ in range(num_trials)])
+    import torch
+    import comparision.utils as utils
+    times = []
+    time_code = torch.zeros((TIME_SIZE,), dtype=torch.float) + .01
+    for _ in range(num_trials):
+        time_code += torch.randn_like(time_code) * TIME_DRIFT_RATE
+        times.append(utils.normalized(time_code.clone()))
+    return np.array(times)
+
+
+#
+# def get_time_sequence(num_trials: int,
+#                       time_drift_rate: float = TIME_DRIFT_RATE,
+#                       noise: float = TIME_DRIFT_NOISE,
+#                       random_state: Optional[int] = None) -> np.ndarray:
+#     """
+#     Generate time sequence as drift on a sphere
+#     """
+#     rng = np.random.default_rng(random_state)
+#     time_fct = pnl.DriftOnASphereIntegrator(initializer=rng.random(TIME_SIZE - 1),
+#                                             noise=noise,
+#                                             dimension=TIME_SIZE)
+#     # return an arrays of .01
+#     # return np.array([np.zeros(25) + .01 for _ in range(num_trials)])
+#     return np.array([time_fct(time_drift_rate) for _ in range(num_trials)])
 #
 
 

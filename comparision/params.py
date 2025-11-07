@@ -18,8 +18,12 @@ NEW_CONTEXT_INTEGRATION_RATE = .3
 TEMPERATURE = .05 # temperature of the softmax used during memory retrieval (smaller means more argmax-like)
 
 # SIMULATION parameters
-N_PARTICIPANTS = 58  # number of participants to simulate
+N_PARTICIPANTS = 200 #58  # number of participants to simulate
 N_BASELINE_TRIALS = 20  # number of baseline trials per participant (one sequence = one trial of each stimulus sequence)
 N_REVALUATION_TRIALS = 20 # number of revaluation trials per participant (one sequence = one trial of each stimulus sequence)
-N_SIMULATIONS = 100  # number of rollouts per participant
+
+N_SIMULATIONS = 1  # number of rollouts per participant
 N_STEPS = 3  # number of steps per rollout
+
+REWARD_BASELINE_1 = 1
+REWARD_BASELINE_2 = 0.01

@@ -106,12 +106,12 @@ def gen_memories(visited_states,
             # Retrieve the context from memory
             memories = (state_memories, context_memories, time_memories, reward_memories)  # tuple of memories
             query = (visited_states[t], _context_rep_tmp, time_code, rewards[t])  # tuple of keys
-            _, retrieved_context, _, _ = sample_memory(memories,
+            _, retrieved_context, _, _, _ = sample_memory(memories,
                                                        query,
                                                        state_retrieval_weight,
                                                        context_retrieval_weight,
                                                        time_retrieval_weight,
-                                                       mode='softmax')
+                                                       mode='argmax')
 
             # Update the context representation
             context_rep = old_context_integration_rate * context_rep + \
@@ -166,7 +166,7 @@ def sample_memory(memories,
         return state_memories[index], context_memories[index], time_memories[index], reward_memories[index], index
     if mode == 'softmax':
         return (total_match.unsqueeze(-1) * state_memories).sum(0), (total_match.unsqueeze(-1) * context_memories).sum(
-            0), (total_match.unsqueeze(-1) * time_memories).sum(0), (total_match * reward_memories).sum(0)
+            0), (total_match.unsqueeze(-1) * time_memories).sum(0), (total_match * reward_memories).sum(0), 0
     raise NotImplementedError(f'Mode {mode} not implemented. Try one of ["sample", "argmax", "softmax"].')
 
 
@@ -224,7 +224,7 @@ def sample_memory_sequential(memories,
                               state_retrieval_weight_sim,
                               context_retrieval_weight_sim,
                               time_retrieval_weight_sim,
-                              mode='sample')
+                              mode='argmax')
 
             # project the next context based on retrieved context and current state
             context_sim = project_next_context(
